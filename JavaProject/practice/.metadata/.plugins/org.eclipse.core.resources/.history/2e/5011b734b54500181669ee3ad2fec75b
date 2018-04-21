@@ -1,0 +1,12 @@
+import java.applet.Applet;
+import java.awt.Graphics;
+
+public class HelloWorld 
+{
+	public void paint(Graphics g)
+	{
+		g.drawString("Hello world!", 50, 25);
+		
+	}
+	//appletviewer file:///C:/Users/Vivek/eclipse-workspace/AppletHelloWorld/src/Hello.html
+}

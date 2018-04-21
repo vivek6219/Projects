@@ -1,0 +1,27 @@
+import java.util.Random;
+public class Fermat
+{
+	public static void main (String args[])
+	{
+		Random rand= new Random();
+		int n = rand.nextInt(Integer.MAX_VALUE)+1;
+		
+		Fermat obj = new Fermat();
+		obj.
+		
+	}
+	
+	
+	public boolean fermatsRecurse(int n)
+	{
+		int a
+		if(a<n)
+		{
+			a = rand.nextInt(n);
+			if((Math.pow(a, n) % n ) == a)
+			{
+				
+			}
+		}
+	}
+}

@@ -1,0 +1,16 @@
+import java.util.Scanner;
+public class Fermat
+{
+	public static void main (String args[])
+	{
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Choose an integer value for +"a"");
+		int a = sc.nextInt();
+		sc.nextLine();
+		int p =sc.nextInt();
+		System.out.println();
+		
+		//System.out.println((Math.pow(a, p) % p ) == a);
+		
+	}
+}

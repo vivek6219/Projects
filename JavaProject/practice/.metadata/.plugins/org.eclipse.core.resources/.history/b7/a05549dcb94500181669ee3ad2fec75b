@@ -1,0 +1,17 @@
+import java.applet.Applet;
+
+import java.awt.Graphics;
+
+import java.io.IOException;
+
+public class HelloWorld 
+{
+	public void paint(Graphics g) throws IOException
+	{
+		Runtime rTime = Runtime.getRuntime();
+		g.drawString("Hello world!", 50, 25);
+		String url ="file:///C:/Users/Vivek/eclipse-workspace/AppletHelloWorld/src/Hello.html";
+		
+	}
+	//appletviewer file:///C:/Users/Vivek/eclipse-workspace/AppletHelloWorld/src/Hello.html
+}

@@ -1,0 +1,16 @@
+import java.applet.Applet;
+import java.awt.Desktop;
+import java.awt.Graphics;
+import java.io.File;
+
+public class HelloWorld 
+{
+	public void paint(Graphics g)
+	{
+		g.drawString("Hello world!", 50, 25);
+		File htmlFile = new File(file:///C:/Users/Vivek/eclipse-workspace/AppletHelloWorld/src/Hello.html);
+		Desktop.getDesktop().browse(htmlFile.toURI());
+
+	}
+	//appletviewer file:///C:/Users/Vivek/eclipse-workspace/AppletHelloWorld/src/Hello.html
+}

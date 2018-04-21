@@ -1,0 +1,14 @@
+import java.util.Random
+public class Fermat
+{
+	public static void main (String args[])
+	{
+	
+
+		if((Math.pow(a, p) % p ) != a)
+		{
+			
+		}
+
+	}
+}

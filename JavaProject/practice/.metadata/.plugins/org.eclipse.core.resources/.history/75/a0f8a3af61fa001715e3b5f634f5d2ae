@@ -1,0 +1,15 @@
+import java.util.Random;
+public class Fermat
+{
+	public static void main (String args[])
+	{
+		Random rand= new Random();
+		double n = rand.nextInt(Integer.MAX_VALUE)+1;
+		int a =  
+		if((Math.pow(a, n) % n ) != a)
+		{
+			
+		}
+
+	}
+}

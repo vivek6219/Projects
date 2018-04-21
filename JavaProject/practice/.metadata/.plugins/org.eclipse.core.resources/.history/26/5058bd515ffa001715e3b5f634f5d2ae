@@ -1,0 +1,11 @@
+import java.util.Scanner;
+public class Fermat
+{
+	public static void main (String args[])
+	{
+		Scanner sc = sc.nextLine();l
+		int a;
+		int p;
+		System.out.println();
+	}
+}
