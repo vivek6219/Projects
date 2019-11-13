@@ -1,0 +1,63 @@
+<html>
+<head>
+	
+	<script src ="jq.js"></script>
+	<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" media="all" /> 
+	<script
+		src="https://code.jquery.com/jquery-1.7.2.min.js"
+		integrity="sha256-R7aNzoy2gFrVs+pNJ6+SokH04ppcEqJ0yFLkNGoFALQ="
+		crossorigin="anonymous">
+	</script>	
+	<script
+		src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+		integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+		crossorigin="anonymous">
+	</script>
+	<style>
+		.MOBA{
+			background-color: black;
+			color: orange;
+			padding: 8px;
+		}
+	</style>
+	<link rel ="stylesheet" href ="styling.css">
+	<link rel ="stylesheet" href ="jqueryui.css">
+
+<title>Dota</title>
+</head>
+<body>
+<ul>
+		
+		<a href ="DotaHTML.html">Home</a>
+		<a href="HeroTypes.html">Hero</a>
+		<a href ="Laning.html">Laning</a>
+</ul>
+<h2>Information</h2>
+<div id ="panels">
+	<h3>Overview</h3>
+	<p>Dota 2 is a very popular moba. A moba is a genre of a game such as rpg or mmorpg is a genre. MOBA based games however; are usually extremely competitive since the players that play these games want to be recognized as great players usually even the best. Dota itself has 5 players in each team with 2 teams pitted against each other. The entire point of the game is to destroy the enemies ancient before they have a chance to destroy yours. However, its not as simple as that. There are over a hundred heroes for a player to choose and play as with hundreds of different items. Each player can choose up to 6 items that from the hundreds. The amount of choices and options within this game alongside consistent major updates that happen yearly have kept this game alive for over 15 years.</p>
+	<h3>Steam</h3>
+	<p>Dota is available free to play on steam.</p>
+</div>
+	
+	<script>
+		$('#panels').accordion();
+	</script>
+<h1 style = "text-align: center; font-size: 50px" >Dota</h1>
+
+ <p id ="info"> Click me!</p>
+<script>
+	$("#info").click(function() {
+		alert("Goto dota2.com for more information");
+	});
+	
+</script>
+ 
+<h2 class ="MOBA"> League Of Legends</h2>
+<p> Leauge of Legends, commonly referred to as LoL is another Popular moba and is considered a direct competitor to dota. </p>
+<p>There is a friendly rivalry between the communities of both games that consider the respective game they play to be "superior."</p>
+<img src="Dota2.jpg" class = "center">
+
+<p id= "para" onmouseover="changeLink()" onmouseout="toNormal()">Hover over!</p>
+</body>
+</html>
