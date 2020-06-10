@@ -1,4 +1,9 @@
 /* .grid is a class*/
+.container{
+    display: flex;
+}
+
+
 .grid {
     width: 200px;
     height: 400px;
@@ -15,4 +20,18 @@
 
 .tetromino{
     background-color: blue;
+}
+
+.mini-grid{
+    margin-left: 50px;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: yellowgreen;
+}
+
+.mini-grid div{
+    height: 20px;
+    width: 20px;
 }
