@@ -1,27 +1,43 @@
-<html lang = "en">
-    <head>
-        <title> Working with Data and API's</title>
-    </head>
+<html lang="en">
 
-    <body>
-        <img src = "rainbow.jpg" id = "rainbow" width=500  />
-        <script>
-                        console.log("Fetching a rainbow");
+<head>
+    <title> Working with Data and API's</title>
+</head>
 
-            async function catchRainbow()
-            {
-                const response = await fetch('rainbow.jpg');
-                const blob = await response.blob();
-                document.getElementById('rainbow').src =URL.createObjectURL(blob);
-            }
-            catchRainbow().then(response =>{
-                console.log("WORKS");
+<body>
+   <!--  <img src="rainbow.jpg" id="rainbow" width=500 />
+    <img src="doubleRainbow.jpg" id="double rainbow" width =500/> -->
+    <script>
+        
+        console.log("Fetching a rainbow");
+
+        const imgArr =['rainbow.jpg','doubleRainbow.jpg'];
+
+
+        catchRainbows(imgArr)
+        .then(response=>{
+                console.log('yay');
             })
-            .catch(error=>{
-                console.log("error!");
+            .catch(error =>{
+                console.log('error');
                 console.error(error);
             });
-        </script>            
-    </body>
+        
+
+        async function catchRainbows(imgArr) {
+            for (let key of imgArr) {
+                const response = await fetch(key);
+                const blob = await response.blob();
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(blob);
+                img.width ='200';
+                document.body.append(img);
+            }
+
+        }
     
+        
+    </script>
+</body>
+
 </html>
