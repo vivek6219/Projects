@@ -1,0 +1,12 @@
+ body{
+    background-color: black;
+}
+h1{
+    color:greenyellow;
+}
+
+p{
+    color:greenyellow;
+    border-style: solid;
+    border-color: white;
+} 

@@ -1,0 +1,96 @@
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin="" />
+
+
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin="">
+        </script>
+
+    <style>
+        #issMap {
+            height: 800px;
+        }
+    </style>
+
+    <Title>Location of the ISS</Title>
+    <h1>Location of the ISS in Real Time:</h1>
+
+
+</head>
+
+<body>
+
+    <p>
+        latitude: <span id="lat"></span>
+        <br>
+        longitude: <span id="long"></span>
+        <br>
+        velocity: <span id="vel"></span>
+    </p>
+
+    <div id="issMap"></div>
+
+    <script>
+
+        const issIcon = L.icon({
+            iconUrl: 'issImg.png',
+            iconSize: [50, 32],
+            iconAnchor: [25, 16],
+        });
+
+        //lat, long, zoom
+        const mymap = L.map('issMap').setView([0, -0], 1);
+        const attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+        const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+        const tiles = L.tileLayer(tileUrl, { attribution });
+        tiles.addTo(mymap);
+
+        const marker = L.marker([0, 0], { icon: issIcon }).addTo(mymap);
+
+
+
+
+
+
+        const api_url = "https://api.wheretheiss.at/v1/satellites/25544";
+
+        async function getData() {
+
+            const response = await fetch(api_url);
+            const data = await response.json();
+
+            //javascript destructuring takes pieces of the data and automaticall stores them into the respective variables accordingly
+            const { latitude, longitude, velocity } = data;
+            //L.marker([latitude,longitude]).addTo(mymap);
+            
+
+            console.log(data);
+            document.getElementById('lat').textContent = latitude;
+            document.getElementById('long').textContent = longitude;
+            document.getElementById('vel').textContent = velocity;
+            console.log(latitude);
+            console.log(latitude);
+            console.log(vel);
+
+            marker.setLatLng([latitude,longitude]);
+
+
+        }
+
+
+        setInterval(function exeInterval() {
+            getData();
+        }, 1000);
+    </script>
+</body>
+
+</html>
