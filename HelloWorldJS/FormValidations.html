@@ -1,0 +1,44 @@
+<html>
+
+<head>
+    <title>Form Validations First Page</title>
+    <script type="text/javascript">
+    function validate(){
+        var uName = document.getElementById("userName");
+        var pWord = document.getElementById("passWord");
+        //trim function prevents blank spaces
+        if(uName.value.trim() =="" || pWord.value.trim()==""){
+            alert("no blank values allowed");
+            uName.style.border="solid 3px red";
+            return false;
+        }
+        else if(pWord.value.trim().length<5){
+            alert("password too short");
+            return false;
+        }
+            
+        return true;
+       
+
+    }
+
+
+    </script>
+</head>
+
+<body>
+    <form onSubmit="return validate()" action ="message.html">
+        <input id = "userName" placeholder="Username" type = "text">
+        <br>
+        <br>
+        <input id ="passWord" placeholder="Password" type = "text">
+        <br>
+        <br>
+        <button type = "submit">Submit</button>
+    </form>
+ 
+
+</body>
+
+
+</html>

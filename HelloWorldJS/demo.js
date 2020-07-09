@@ -1,0 +1,1 @@
+document.write("<h1>Heading in JS FILE</h1>");

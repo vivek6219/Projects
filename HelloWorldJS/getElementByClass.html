@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <title>DOM manipulations and getElementByClassName</title>
+    <script type="text/javascript">
+     function changeStyling(){
+         var element = document.getElementsByClassName("mypara");
+         for(var i =0; i<element.length; i++){
+             element[i].style.color="red";
+         }
+     }
+    
+
+    </script>
+</head>
+
+<body>
+
+    <p class = "mypara">Paragraph 1(my para)</p>
+    <p>Paragraph 2</p>
+    <p class ="mypara">Paragraph 3(my para)</p>
+    <p>Paragraph4</p>
+    <p class ="mypara">Paragraph 4(mypara)</p>
+    <p>paragraph 5</p>
+    <a class ="mypara" href= "#"> This is an anchor tag with the mypara class attached</a>
+    <br>
+    <button onclick="changeStyling()">CLICK ME</button>
+</body>
+</html>

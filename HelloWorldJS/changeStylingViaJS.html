@@ -1,0 +1,27 @@
+<html>
+
+<head>
+    <title>DOM manipulations and getElementByTagName</title>
+    <script type="text/javascript">
+     function changeStyling(){
+         //change css styling via javascript
+         var para= document.getElementsByTagName("p");
+         for(var i =0; i<para.length; i++){
+             para[i].style.fontSize =25;
+         }
+     }
+
+
+    </script>
+</head>
+
+<body>
+   <p>Lorem 1</p>
+   <p>Lorem 2</p>
+   <p>Lorem 3</p>
+   <p>Lorem 4</p>
+   <p>Lorem 5</p>
+   <br>
+   <button onClick="changeStyling()">Click MEEe</button>
+</body>
+</html>

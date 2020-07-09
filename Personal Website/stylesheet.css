@@ -1,0 +1,15 @@
+body{
+    background-image: url(Background.webp);
+    width:100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: block;
+    background-size: cover;
+    
+    
+}
+h1{
+    font-family: 'Courier New', Courier, monospace;
+    text-align: center;
+    font-size: 20px;
+}

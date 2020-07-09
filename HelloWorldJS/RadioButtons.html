@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <title>Dom Manipulations(Radiobuttons)</title>
+    <script type="text/javascript">
+        
+        function chooseRadio(){
+            var rd1 = document.getElementById("radio1");
+            var rd2 = document.getElementById("radio2");
+
+            if(rd1.checked ==true)
+                alert("The choice selected is: "+ rd1.value);
+            else if(rd2.checked ==true)
+                alert("The choice selected is "+ rd2.value); //the value attribute is from the value defined in the creation of the choice
+            else   
+                alert("No choice selected");
+    }
+
+    </script>
+</head>
+
+<body>
+    <input id ="radio1" name ="grp1" type ="radio" value="First choice">First choice</input>
+    <br>
+    <input id ="radio2" name ="grp1" type ="radio" value="Second choice">Second choice</input>
+    <br>
+    <button onClick ="chooseRadio()">Click me</button>
+
+</body>
+</html>

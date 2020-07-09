@@ -1,0 +1,25 @@
+<html>
+
+<head>
+    <title>Take input from a drop down (select) box</title>
+    <script type="text/javascript">
+      //going to use getElementById to get select box
+        function clickButton(){
+            var selectVar = document.getElementById("selectBox");
+            alert(selectVar.options[selectVar.selectedIndex].value); //.options and .selectedIndex are built in attributes in select element tag
+        }
+    </script>
+</head>
+
+<body>
+    
+    <select id ="selectBox">
+        <option value ="Option1">Option 1</option>
+        <option value ="Option2">Option 2</option>
+        <option value ="Option3">Option 3</option>
+    </select>
+    <br>
+    <button onclick="clickButton()">Enter</button>
+
+</body>
+</html>

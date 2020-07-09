@@ -1,0 +1,37 @@
+h1{
+    text-align: center;
+    margin: 0;
+    position: relative;
+    font-size: 50px;
+
+    
+}
+  
+#time{
+    position: fixed;
+    top:50%;
+    left: 49%;
+    margin-top:-1000px;
+    border:  15px solid black;
+    font-size: 100px ;
+}
+#bg {
+    position: fixed; 
+    top: -50%; 
+    left: -50%; 
+    width: 200%; 
+    height: 200%;
+    opacity: 0.9;
+
+  }
+  #bg img {
+    opacity: 0.9;
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0; 
+    margin: auto; 
+    min-width: 50%;
+    min-height: 50%;
+  }
