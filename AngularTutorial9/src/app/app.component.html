@@ -1,0 +1,55 @@
+<!-- <h1>Main html component</h1>    
+<h2>{{title}}</h2>
+<h2>Array data: {{arrayData}}</h2>
+<h2>Array data: {{arrayData[0]}}</h2>
+<h2>{{obj.name}}</h2> -->
+<!-- <h2>Click Events</h2>
+<button (click)="testFunction('hello')">Click me</button> -->
+<!-- 
+<h2>Get Textbox value on enter text</h2>
+<input type ="text" #txt>
+<button (click)="getTextBoxValue(txt)">get value</button> -->
+<!-- 
+<h1>Property Binding in angular</h1>
+
+<input type ="text" name={{nameTxt}}>
+<input type ="text" [name] =nameTxt> -->
+
+<!-- <app-users></app-users>
+<app-login></app-login> -->
+
+<!-- <h2 *ngIf ="showMe else elseBlock">hi NGIF</h2>
+<ng-template #elseBlock>
+    <h2>Else block</h2>
+</ng-template> -->
+<!-- 
+<h1>*ngIf in angular 9</h1>
+
+<h2 *ngIf="title == 'AngularTutorial9' then ifBlock else elseBlock"></h2>
+<ng-template #ifBlock>
+    <h2>This is the If block when showMe is true</h2>
+</ng-template>
+<ng-template #elseBlock>
+    <h2>This is the else block when showMe is false</h2>
+</ng-template> -->
+<!-- 
+<h1>Switch case</h1>
+<div [ngSwitch]="color">
+    <h2 *ngSwitchCase ="'red'" style="color:red">RED</h2>
+    <h2 *ngSwitchCase ="'green'" style = "color:green">GREEN</h2>
+    <h2 *ngSwitchCase = "'blue'" style = "color:blue">BLUE</h2>
+    <h2 *ngSwitchCase ="'yellow'" style ="color:yellow">YELLOW</h2>
+</div> -->
+<!-- 
+<h1>For loop in angular</h1>
+<h4 *ngFor ="let item of fruit">{{item}}</h4> -->
+
+<h1>Forms in angular</h1>
+<form #userForm ="ngForm" (ngSubmit) ="onSubmit(userForm.value)">
+    <input type = "text" name ="email" ngModel > <br><br>
+    <input type ="text" name ="address" ngModel> <br><br>
+    <input type ="text" name ="contact" ngModel> <br><br>
+    <button type ="submit">submit data</button>
+
+</form>
+<router-outlet></router-outlet>
