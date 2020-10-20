@@ -1,0 +1,648 @@
+/**
+ * A class for managing the relationship between the TOC and the course menu
+ * (which can be expanded/collapsed).  This class operates in one of two modes.
+ * In the event that the course menu exists on the page, this class works in
+ * "automatic" mode -- it registers for course menu expand/collapse events and
+ * automatically adjusts the TOC as necessary.  When the course menu does not
+ * exist on the page (as can happen when a student views a learning unit in a
+ * new window) this class works in "manual" mode and must be explicitly called
+ * when the TOC changes position in order to ensure the TOC renders properly.
+ * <p>
+ * The function isAutomatic determines what "mode" this class is working in.
+ * The function onClickPull can be called to manually updated the TOC as
+ * appropriate.
+ */
+var clickPullTOC =
+{
+  ClickPullTOC: Class.create(
+  {
+    /**
+     * initialize
+     */
+    initialize: function()
+    {
+      this.puller = $( 'puller' );
+      this.onClickPull(); // initialize the state.
+
+      if ( this.isAutomatic() )
+      {
+        // we want to be notified when course menu (puller) expand/collapse events
+        // happen so register ourselves as a listener.  During initialization the
+        // menu toggler may not exist yet so we have to wrap the call to add
+        // ourselves as event listener in a periodic check that waits for it.
+        new PeriodicalExecuter( function( pe )
+        {
+           if ( page.PageMenuToggler.toggler )
+           {
+             pe.stop();
+             page.PageMenuToggler.toggler.addToggleListener( this.onClickPull.bind( this ) );
+           }
+        }.bind( this ), 0.05 );
+      }
+    },
+
+    /**
+     * Whether this class is working in "automatic" mode.  If in automatic mode
+     * then TOC updates based on menu expand/collapse events will happen
+     * automatically.  Otherwise, manual invocation of onClickPull is required.
+     */
+    isAutomatic: function()
+    {
+      return this.puller ? true : false;
+    },
+
+    /**
+     * Updates the TOC (style) based on the current state of the course menu
+     * (whether it is expanded or collapsed).  This method will still function
+     * even if the course menu does not exist.
+     */
+    onClickPull: function( isOpen )
+    {
+      var cart = $( 'tocCart' );
+      var puller = this.puller;
+      cart.removeClassName( 'tocBottom_pullExpanded' ).
+           removeClassName( 'tocBottom_pullCollapsed' ).
+           removeClassName( 'tocSide_pullExpanded' ).
+           removeClassName( 'tocSide_pullCollapsed' );
+
+      // if puller is null then no course menu exists, this is the same as collapsed
+
+      // if bottom TOC and course menu (puller) collapsed
+      if ( ( !puller || puller.hasClassName( 'pullcollapsed' ) ) && !cart.hasClassName( 'sideTOC' ) )
+      {
+        cart.addClassName( 'tocBottom_pullCollapsed' );
+      }
+      // else if bottom TOC and course menu (puller) expanded
+      else if ( ( !puller || !puller.hasClassName( 'pullcollapsed' ) ) && !cart.hasClassName( 'sideTOC' ) )
+      {
+        cart.addClassName( 'tocBottom_pullExpanded' );
+      }
+      // else if side TOC and course menu (puller) collapsed
+      else if ( ( !puller || puller.hasClassName( 'pullcollapsed' ) ) && cart.hasClassName( 'sideTOC' ) )
+      {
+        cart.addClassName( 'tocSide_pullCollapsed' );
+      }
+      // else side TOC and course menu (puller) expanded
+      else
+      {
+        cart.addClassName( 'tocSide_pullExpanded' );
+      }
+    }
+  })
+};
+
+/**
+ * Handles the rendering and manipulation of the Learning Unit TOC panel/drawer
+ */
+var learningUnitToc = {};
+learningUnitToc.LearningUnitTocPanel = {};
+learningUnitToc.LearningUnitTocPanel = Class.create();
+learningUnitToc.LearningUnitTocPanel.prototype =
+{
+  /**
+   * Initializes the TOC using the given values.  Initial TOC size and location
+   * are set and the tree contents initialized.
+   */
+  initialize : function( learningUnitId,
+                         instructorView,
+                         courseId,
+                         expandAll,
+                         location,
+                         size,
+                         nonce)
+  {
+    this.learningUnitId = learningUnitId;
+    this.instructorView = instructorView;
+    this.courseId = courseId;
+    this.expandAll = expandAll;
+    this.isSmallScreen = window.matchMedia("(max-width: 1037px)");
+    // declare some constants for handling of TOC size
+    this.smallTocSize = '130px';
+    this.largeTocSize = '300px';
+
+    var height = "innerHeight" in window ? window.innerHeight : document.documentElement.offsetHeight;
+    // 14 is the combined height of vertical padding and borders around #tocCart
+    // 64 is the offset for the padding to ensure that the scroll bar doesn't fall off the page
+
+    this.sideTocHeight = Math.min($( 'contentPanel' ).offsetHeight - 14, height - 64);
+      
+
+    // values used for state saving/handling call backs
+    this.stateSaveUrl = '/webapps/blackboard/execute/learningUnitStateSave';
+    this.contextParameters = { learningUnitId: learningUnitId, course_id: courseId, "blackboard.platform.security.NonceUtil.nonce.ajax": nonce };
+
+    // used to manage the course menu/TOC relationship
+    this.clickPull = new clickPullTOC.ClickPullTOC();
+
+    /*
+     * Now that we have set up our basic stuff, we need to initialize the TOC
+     */
+
+    // save the size to be used when we move the TOC to the right location
+    this.size = size;
+    this.removeIframe();
+    if ( location == "bottom" )
+    {
+      this._moveToBottom();
+      this.positionIframe();
+    }
+    else // if ( location == "side" )
+    {
+      this._moveToSide();
+    }
+
+    if (this.isSmallScreen.matches) 
+    { 
+      this.resetMobileTocResize();
+    }
+
+    Event.observe(window, 'resize', this.resetMobileTocResize);  
+
+    // initialize the contents of the tree
+    this._initTree();
+
+    // the TOC is initially hidden so that the transitions from the default
+    // location (at the bottom) to wherever the TOC is supposed to be (based
+    // on user settings) along with size changes are not shown to the user.
+    // So, the last thing we will do is to show the TOC to the user.
+    $( 'tocCart' ).removeClassName('tocHidden');
+  },
+
+  resetMobileTocResize : function()
+  {
+    var cart = $( 'tocCart' );
+   
+    if (this.isSmallScreen.matches) 
+    {
+      cart.addClassName('mobile-toc-cart');
+      cart.style.width = '100%';
+      cart.style.maxHeight = '40px';
+      this.sideTocHeight = 40;
+    } 
+    else 
+    {
+      if (cart.hasClassName('mobile-toc-cart')) 
+      {
+        cart.style.maxHeight = 'none';
+        if ( location == "bottom" )
+        {
+          this._moveToBottom();
+          this.positionIframe();
+          cart.removeClassName('mobile-toc-cart');
+        }
+        else // if ( location == "side" )
+        {
+          cart.style.width = '200px';
+          cart.removeClassName('mobile-toc-cart');
+        }
+      }
+    }
+  },
+  
+  /**
+   * Defaults the components of the TOC to a known state.
+   */
+  _reset : function()
+  {
+    // return bottom buttons to their default state -- hide button panel
+    $( 'tocButtons' ).hide();
+    $( 'maximizeButton' ).show();
+    $( 'minimizeButton' ).show();
+    $( 'moveToSideButton' ).show();
+    $( 'expandButton' ).hide();
+    $( 'collapseButton' ).hide();
+
+    // return side buttons to their default state -- hide button panel
+    $( 'tocSideButtons' ).hide();
+    $( 'maximizeSideButton' ).show();
+    $( 'minimizeSideButton' ).show();
+    $( 'moveToBottomButton' ).show();
+    $( 'expandSideButton' ).hide();
+    $( 'collapseSideButton' ).hide();
+
+    // show a default set of components and remove "extra" class names
+    $( 'tocCart' ).style.height = 'auto';
+    $( 'tocCart' ).removeClassName( 'sideTOCMinimize' );
+    $( 'tocTitle' ).show();
+    $( 'tocNavControls' ).show();
+    $( 'tocTreeWrapper' ).show();
+    $( 'contentPanel' ).addClassName('learning-module-content'),
+    $( 'contentPanel' ).removeClassName( 'sideTOC_panel' ).
+                        removeClassName( 'sideTOC_panelMin' ).
+                        removeClassName( 'sideTOC_panelMax' ).
+                        removeClassName( 'tocBottom_min' ).
+                        removeClassName( 'tocBottom_max' ).
+                        removeClassName( 'tocBottom_open' );
+  },
+
+  /**
+   * Collapses the TOC to its smallest supported size.  This does not effect the
+   * location of the TOC on the screen.  This operation works in both side or
+   * bottom mode, the given element determines which mode is used.
+   * <p>
+   * This method issues an AJAX request to the server to save the requested
+   * change in size for use during subsequent page requests.
+   */
+  minimize : function( el )
+  {
+    // hide the TOC so the user does not see the multiple transitions
+    $( 'tocCart' ).addClassName('tocHidden');
+    this.removeIframe();
+    this._minimize( el );
+    this._saveSize( 'minimized' );
+    this.positionIframe();
+    $( 'tocCart' ).removeClassName('tocHidden'); // make sure to show the TOC now that we are done
+  },
+
+  /**
+   * Internal minimize implementation.
+   */
+  _minimize : function( el )
+  {
+    this._reset();  // reset to a known state
+
+    var cart = $( 'tocCart' );
+    var treeWrapper = $( 'tocTreeWrapper' );
+
+    if ( el.getAttribute( 'id' ) == 'minimizeButton' )
+    {
+      treeWrapper.hide();
+      $( 'minimizeButton' ).hide();
+      $( 'expandButton' ).show();
+      $( 'tocButtons' ).show();
+      $( 'contentPanel' ).addClassName('tocBottom_min');
+    }
+    else
+    {
+      cart.style.width = '12px';
+      cart.style.height = this.sideTocHeight + 14 + 'px'; // reinstating the 14px of vertical padding and borders around #tocCart
+      cart.addClassName( 'sideTOCMinimize' );
+
+      $( 'contentPanel' ).addClassName( 'sideTOC_panelMin' );
+
+      treeWrapper.hide();
+      $( 'tocTitle' ).hide();
+      $( 'tocNavControls' ).hide();
+      $( 'expandSideButton' ).show();
+      $( 'minimizeSideButton' ).hide();
+      $( 'tocSideButtons' ).show();
+    }
+  },
+
+  /**
+   * Expands the TOC to its largest supported size.  This does not effect the
+   * location of the TOC on the screen.  This operation works in both side or
+   * bottom mode, the given element determines which mode is used.
+   * <p>
+   * This method issues an AJAX request to the server to save the requested
+   * change in size for use during subsequent page requests.
+   */
+  maximize : function( el )
+  {
+    // hide the TOC so the user does not see the multiple transitions
+    $( 'tocCart' ).addClassName('tocHidden');
+    this.removeIframe();
+    this._maximize( el );
+    this._saveSize( 'maximized' );
+    this.positionIframe();
+    $( 'tocCart' ).removeClassName('tocHidden');  // make sure to show the TOC now that we are done
+  },
+
+  /**
+   * Internal maximize implementation.
+   */
+  _maximize : function( el )
+  {
+    this._reset();  // reset to a known state
+
+    if ( el.getAttribute( 'id' ) == 'maximizeButton' )
+    {
+      var treeWrapper = $( 'tocTreeWrapper' );
+      treeWrapper.style.height = this.largeTocSize;
+      $( 'contentPanel' ).addClassName('tocBottom_max');
+
+      $( 'maximizeButton' ).hide();
+      $( 'collapseButton' ).show();
+      $( 'tocButtons' ).show();
+    }
+    else
+    {
+      var cart = $( 'tocCart' );
+      cart.style.width = '350px';
+      cart.style.height = this.sideTocHeight + 'px';
+      $( 'contentPanel' ).addClassName( 'sideTOC_panelMax' );
+
+      $( 'maximizeSideButton' ).hide();
+      $( 'collapseSideButton' ).show();
+      $( 'tocSideButtons' ).show();
+    }
+  },
+
+  /**
+   * Resets the size of the TOC to its default state (not minimized and not
+   * maximized).  This does not effect the location of the TOC on the screen.
+   * This operation works in both side or bottom mode, the given element
+   * determines which mode is used.
+   * <p>
+   * This method issues an AJAX request to the server to save the requested
+   * change in size for use during subsequent page requests.
+   */
+  sizeReset : function( el )
+  {
+    // hide the TOC so the user does not see the multiple transitions
+    $( 'tocCart' ).addClassName('tocHidden');
+    this.removeIframe();
+    this._sizeReset( el );
+    this._saveSize( 'normal' );
+    this.positionIframe();
+    $( 'tocCart' ).removeClassName('tocHidden');  // make sure to show the TOC now that we are done
+  },
+
+  /**
+   * Internal sizeReset implementation.
+   */
+  _sizeReset : function( el )
+  {
+    this._reset();  // reset to a known state
+
+    var elementId = el.getAttribute( 'id' );
+    if ( elementId == 'expandButton' || elementId == 'collapseButton' )
+    {
+      var treeWrapper = $( 'tocTreeWrapper' );
+      treeWrapper.style.height = this.smallTocSize;
+      $( 'tocButtons' ).show();
+      $( 'contentPanel' ).addClassName('tocBottom_open');
+    }
+    else
+    {
+      var cart = $( 'tocCart' );
+      cart.style.width = '200px';
+      cart.style.height = this.sideTocHeight + 'px';
+      $( 'contentPanel' ).addClassName( 'sideTOC_panel' );
+      $( 'tocSideButtons' ).show();
+    }
+  },
+
+  /**
+   * Moves the TOC to the bottom of the content panel.  This does not effect the
+   * size of the TOC on the screen.
+   * <p>
+   * This method issues an AJAX request to the server to save the requested
+   * change in location for use during subsequent page requests.
+   */
+  moveToBottom : function()
+  {
+    // hide the TOC so the user does not see the multiple transitions
+    $( 'tocCart' ).addClassName('tocHidden');
+    this.removeIframe();
+    this._moveToBottom();
+    this._saveLocation( 'bottom' );
+    this.positionIframe();
+    $( 'tocCart' ).removeClassName('tocHidden');  // make sure to show the TOC now that we are done
+  },
+
+  /**
+   * Internal moveToBottom implementation.
+   */
+  _moveToBottom : function()
+  {
+    this._reset();  // reset to a known state
+
+    var cart = $( 'tocCart' );
+    cart.removeClassName( 'sideTOC' );
+    cart.removeClassName( 'sideTOCMinimize' );
+    cart.style.width = '90%';
+    var treeWrapper = $( 'tocTreeWrapper' );
+    treeWrapper.style.height = this.smallTocSize;
+    $( 'tocButtons' ).show();
+
+    // update the TOC style(s) manually when moving the TOC to the bottom
+    this.clickPull.onClickPull();
+
+    // when moving from side to bottom we have to "re-apply" the current size
+    if ( this.size == 'minimized' )
+    {
+      this._minimize( $( 'minimizeButton' ) );
+    }
+    else if ( this.size == 'maximized' )
+    {
+      this._maximize( $( 'maximizeButton' ) );
+    }
+    else // if ( this.size == 'normal' )
+    {
+      this._sizeReset( $( 'expandButton' ) );
+    }
+  },
+
+  /**
+   * Moves the TOC to the side of the content panel.  This does not effect the
+   * size of the TOC on the screen.
+   * <p>
+   * This method issues an AJAX request to the server to save the requested
+   * change in location for use during subsequent page requests.
+   */
+  moveToSide : function()
+  {
+    // hide the TOC so the user does not see the multiple transitions
+    $( 'tocCart' ).addClassName('tocHidden');
+    this.removeIframe();
+    this._moveToSide();
+    this._saveLocation( 'side' );
+    $( 'tocCart' ).removeClassName('tocHidden');  // make sure to show the TOC now that we are done
+  },
+
+  /**
+   * Internal moveToSide implementation.
+   */
+  _moveToSide : function()
+  {
+    this._reset();  // reset to a known state
+
+    var cart = $( 'tocCart' );
+    cart.style.width = '200px';
+    cart.addClassName( 'sideTOC' );
+    cart.style.height = this.sideTocHeight + 'px';
+
+    $( 'contentPanel' ).addClassName( 'sideTOC_panel' );
+    $( 'tocSideButtons' ).show();
+
+    var treeWrapper = $( 'tocTreeWrapper' );
+    var tocHeadHeight = $( 'tocHead' ).offsetHeight;
+    treeWrapper.style.height = this.sideTocHeight - tocHeadHeight - 6 + 'px'; /* minus margins */
+
+    // update the TOC style(s) manually when moving the TOC to the side
+    this.clickPull.onClickPull();
+
+    // when moving from bottom to side we have to "re-apply" the current size
+    if ( this.size == 'minimized' )
+    {
+      this._minimize( $( 'minimizeSideButton' ) );
+    }
+    else if ( this.size == 'maximized' )
+    {
+      this._maximize( $( 'maximizeSideButton' ) );
+    }
+    else // if ( this.size == 'normal' )
+    {
+      this._sizeReset( $( 'expandSideButton' ) );
+    }
+
+    page.util.initPinBottomSubmitStep();
+  },
+
+  /**
+   * Initializes the contents of the TOC (tree)
+   */
+  _initTree : function()
+  {
+    var luToc = new dynamictree.Tree( 'learningUnitToc',
+                                      null,
+                                      '/webapps/blackboard/execute/learningUnitTocTreeViewGenerator',
+                                      'learningUnitId=' + this.learningUnitId +
+                                        '&instructorView=' + this.instructorView +
+                                        '&course_id=' + this.courseId,
+                                      true,
+                                      this.expandAll );
+  },
+
+  /**
+   * Refreshes the contents of the TOC (tree) using the latest system data.
+   */
+  refreshTree : function()
+  {
+    $( 'learningUnitToc' ).update( '' );  // remove contents of the current tree
+    var luToc = new dynamictree.Tree( 'learningUnitToc',
+                                      null,
+                                      '/webapps/blackboard/execute/learningUnitTocTreeViewGenerator',
+                                      'learningUnitId=' + this.learningUnitId +
+                                        '&instructorView=' + this.instructorView +
+                                        '&course_id=' + this.courseId +
+                                        '&refresh=true',
+                                      true,
+                                      false );
+  },
+
+  /**
+   * Saves the given location as the TOC current location
+   */
+  _saveLocation : function( location )
+  {
+    // save the location on the server so we can preserve it across pages hits
+    var params = Object.extend( { location: location }, this.contextParameters );
+    new Ajax.Request( this.stateSaveUrl,
+    {
+      method: 'post',
+      parameters: params,
+      requestHeaders: { cookie: document.cookie }
+    });
+  },
+
+
+  /**
+   * Saves the given size as the TOC current size
+   */
+  _saveSize : function( size )
+  {
+    // save the size locally so we can properly preserve it during transitions
+    // between the TOC being on the side and the TOC being on the bottom
+    this.size = size;
+
+    // save the size on the server so we can preserve it across pages hits
+    var params = Object.extend( { size: size }, this.contextParameters );
+    new Ajax.Request( this.stateSaveUrl,
+    {
+      method: 'post',
+      parameters: params,
+      requestHeaders: { cookie: document.cookie }
+    });
+  },
+
+  /**
+   * Launches a link (in the current frame) and optionally confirms the action
+   * with the user.  All learning unit-provided navigation elements should
+   * filter through this method since there are times when we may want alert the
+   * user to side effects of their navigation attempt -- work won't be saved for
+   * example.
+   */
+  launchLink : function( link )
+  {
+    // if we should confirm the navigation attempt, a warning message will have
+    // been written to a JS global variable named "learnignUnitWarning".  Check.
+    if ( window.learningUnitWarning )
+    {
+      if ( !confirm( window.learningUnitWarning ) )
+      {
+        return false;
+      }
+    }
+
+    // no confirmation is necessary or the user has confirmed so go
+    document.location.href = link;
+  },
+
+  /**
+   * Positions an iframe behind the toc to avoid the bleeding of the pdf's or the video files
+   * over the toc.
+   */
+  positionIframe : function()
+  {
+    var frame = document.createElement('iframe');
+    var tCart = $('tocCart');
+    var tTreeWrapper = $('tocTreeWrapper');
+    frame.id = 'emptySlate';
+    frame.style.height = this.checkHeight();
+    frame.setAttribute('frameborder', '0');
+    frame.setAttribute('scrolling', 'no');
+    frame.setAttribute('src', 'javascript:"";');
+    frame.style.display = "block";
+    $('containerdiv').appendChild(frame);
+  },
+
+  removeIframe : function()
+  {
+    var frame = document.getElementById('emptySlate');
+    if ( frame )
+    {
+      $('containerdiv').removeChild(frame);
+    }
+  },
+
+  /**
+   * This method checks the current size of the toc and then returns the height of the iframe.
+   * The numbers were determined by hit and trial so as to restrict the height of the iframe within the
+   * toc limits.
+   */
+  checkHeight : function()
+  {
+    if ( this.size == "minimized" )
+    {
+      /*
+       * This number is the size of the area outside the #tocTreeWrapper, i.e., including the title area
+       * and the small area at the bottom (total height of #tocCart - (height of #tocTreeWrapper+border width)).
+       */
+      return "35px";
+    }
+    else if ( this.size == "maximized" )
+    {
+      /*
+       * These numbers are simply addition of the outer area(39) to the height of the #tocTreeWrapper
+       * declared on line (118-123)
+       */
+      return "339px";
+    }
+    return "169px";
+  },
+
+  mobileSlideUp : function()
+  {
+    var cart = $( 'tocCart' );
+    if (!cart.hasClassName("tocMobileOpen")) {
+      cart.style.maxHeight = "100%";
+     $(document.body).addClassName("bodyNoScroll");
+    } else {
+      cart.style.maxHeight = "40px";
+      $(document.body).removeClassName("bodyNoScroll");
+    }
+    cart.toggleClassName("tocMobileOpen");
+   }
+};
